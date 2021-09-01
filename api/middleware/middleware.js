@@ -1,6 +1,6 @@
 //Define the hub middleware functions
 //Import findByID, yup
-const {findById} = require("../users/users-model");
+//const {findById} = require("../users/users-model");
 const yup = require("yup");
 const User = require("../users/users-model");
 
@@ -42,8 +42,11 @@ const validateUser = (req, res, next) => {
       //Alert the user
     res.status(400).json({message: "missing required name field" })
   }
+  //Assign name to req.name object
   else {req.name = name.trim();next()}
 }
+
+//Validate Post Schema
  const userSchema = yup.object({
    name: yup.string().trim().min(3).required(),
    text: yup.string().trim().min(3).required(),
@@ -51,15 +54,14 @@ const validateUser = (req, res, next) => {
 
 const validatePost = (req, res, next) =>{
   console.log("validatePost function", req.body);
-  //Attempt validation
-  try{
-    //Assign validated req to validatedPost, then assign to req.body
-   const validatedPost = userSchema.validate(req.body);
-   req.body = validatedPost;
-   next();
-  }
-  //Catch, calls next with error ob
-  catch(error){next(error)}
+  const {text} =  req.name;
+  //If text is empty
+    if (!text || !text.trim()){
+       //Alert the user
+       res.status(400).json({message: "missing required name field" })
+    }
+    //Assign text to req.text object
+    else {req.text = text.trim();next()}
 }
 // Export the middleware functions
 module.exports = {logger, validateUserId, validateUser,validatePost};
