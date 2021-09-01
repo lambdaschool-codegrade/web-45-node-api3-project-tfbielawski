@@ -2,48 +2,47 @@
 //Import findByID, yup
 const {findById} = require("../users/users-model");
 const yup = require("yup");
+const User = require("../users/users-model");
 
 //Logger function definition, logs each req/res firing
 const logger = (req,res,next) =>{
-  //Req and res objects
-  console.log("LOGGER FUNCTION:")
-  console.log(`[${req.method}] $[${req.url}]`)
+  const timeStamp = new Date().toLocaleString();
+  const method = req.method;
+  const url = req.originalUrl
+  console.log("LOGGER FUNCTION:",`[${req.method}] $[${req.url}]`)
+  console.log(`[${timeStamp}] $[${method}] $[${url}]`)
   next();
 }
 
 //Find id by req.params.id, 
-const validateUserId = (req, res, next) => {
+const validateUserId = async ( req, res, next) => {
   console.log("validateUserId function", req.params.id);
-  findById(req.params.id)
-  .then(user => {
-    if(user){
-      req.user = user;
-      next();
-    }
-    else {
-      next({
-        status: 404,
-        message: `message: "user not found"`
-      })
-    }
-  })
+   try{
+     const user = await User.getById(req.params.id);
+     if(!user){
+       res.status(404).json({
+         status: 404,
+         message: "user not found"
+       })
+     }
+     //Assign user object to req.user, call next
+     else { req.user = user; next(); }
+   }
+   catch(error) {
+     res.status(500).json({message: "user not found"})
+   }
 }
 
 //Check user payload
 const validateUser = (req, res, next) => {
   console.log("validateUser", req.body);
-  if (req.body.name && req.body.name.trim()){
-    //assign the trimmed value to req.body.name, call next
-    req.body.name = req.body.name.trim();
-    next();
+  const {name} =  req.name;
+  //If name is empty
+  if (!name || !name.trim()){
+      //Alert the user
+    res.status(400).json({message: "missing required name field" })
   }
-  else {
-      next({
-        status: 422,
-        message: `hub requires a valid name`
-      })
-  }
-
+  else {req.name = name.trim();next()}
 }
  const userSchema = yup.object({
    name: yup.string().trim().min(3).required(),

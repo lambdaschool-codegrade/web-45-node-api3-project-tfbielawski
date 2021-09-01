@@ -1,6 +1,5 @@
 
 const express = require('express');
-
 const {validateUserId, validateUser,validatePost} = require("../middleware/middleware");
 const Users = require("./users-model");
 //const Posts = require("../posts/posts-model");
@@ -16,39 +15,36 @@ router.get('/', (req, res, next) => {
 });
 
 
-module.exports = router;
+router.get('/:id', validateUserId,( req, res) => {
 
-
-router.get('/:id', (req, res) => {
-  // RETURN THE USER OBJECT
-  // this needs a middleware to verify user id
 });
 
-router.post('/', (req, res) => {
+router.post('/',validateUser, (req, res) => {
   // RETURN THE NEWLY CREATED USER OBJECT
   // this needs a middleware to check that the request body is valid
 });
 
-router.put('/:id', (req, res) => {
-  // RETURN THE FRESHLY UPDATED USER OBJECT
+router.put('/:id', validateUserId, validateUser, (req, res) => {
+  console.log("Req.user>>:", req.user, "Req.name", req.name)
   // this needs a middleware to verify user id
   // and another middleware to check that the request body is valid
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', validateUserId,(req, res) => {
   // RETURN THE FRESHLY DELETED USER OBJECT
   // this needs a middleware to verify user id
 });
 
-router.get('/:id/posts', (req, res) => {
+router.get('/:id/posts', validateUserId,(req, res) => {
   // RETURN THE ARRAY OF USER POSTS
   // this needs a middleware to verify user id
 });
 
-router.post('/:id/posts', (req, res) => {
+router.post('/:id/posts',validateUserId,(req, res) => {
   // RETURN THE NEWLY CREATED USER POST
   // this needs a middleware to verify user id
   // and another middleware to check that the request body is valid
 });
 
 // do not forget to export the router
+module.exports = router;
