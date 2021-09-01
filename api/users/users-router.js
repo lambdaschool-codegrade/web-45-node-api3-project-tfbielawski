@@ -15,18 +15,23 @@ router.get('/', (req, res, next) => {
 
 //Validate a user's id
 router.get('/:id', validateUserId,( req, res) => {
-
+    res.json(req.users);
 });
 
-router.post('/',validateUser, (req, res) => {
-  // RETURN THE NEWLY CREATED USER OBJECT
-  // this needs a middleware to check that the request body is valid
+//Create a new user
+router.post('/',validateUser, (req, res, next) => {
+    console.log("Req.user>>:", req.user, "Req.name", req.name)
+    Users.insert({name: req.name})
+        .then(newUser => {res.status(201).json(newUser);})
+        .catch(next)
 });
 
-router.put('/:id', validateUserId, validateUser, (req, res) => {
-  console.log("Req.user>>:", req.user, "Req.name", req.name)
-  // this needs a middleware to verify user id
-  // and another middleware to check that the request body is valid
+router.put('/:id', validateUserId, validateUser, (req, res, next) => {
+    //Update users, pass in params.id and name object to record changes
+    Users.update(req.params.id, {name: req.name})
+        .then(() => {return Users.getById(req.params.id)})
+        .then(user =>{res.json})
+        .catch(next)
 });
 
 router.delete('/:id', validateUserId,(req, res) => {
