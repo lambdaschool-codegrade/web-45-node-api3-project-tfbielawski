@@ -9,31 +9,31 @@ const router = express.Router();
 //Gets an array of users
 router.get('/', (req, res, next) => {
     Users.get()
-        .then(users=>{ res.status(200).json(users); })
+        .then(users=>{ res.json(users); })
         .catch(next);
 });
 
 //Validate a user's id
 router.get('/:id', validateUserId,( req, res) => {
-    res.json(req.users);
+    res.json(req.user);
 });
 
 //Create a new user
 router.post('/',validateUser, (req, res, next) => {
-    console.log("Req.user>>:", req.user, "Req.name", req.name)
     Users.insert({name: req.name})
         .then(newUser => {res.status(201).json(newUser);})
         .catch(next)
 });
 
-router.put('/:id', validateUserId, validateUser, (req, res, next) => {
+router.put('/:id', validateUser, validateUserId,  (req, res, next) => {
     //Update users, pass in params.id and name object to record changes
     Users.update(req.params.id, {name: req.name})
-        .then(() => {return Users.getById(req.params.id)})
-        .then(user =>{res.json})
+        .then(updatedUser => { res.status(200).json(updatedUser)})
+        //.then(users =>{res.json})
         .catch(next)
 });
 
+//Delete posts
 router.delete('/:id', validateUserId, async (req, res, next) => {
     try{
         await Users.remove(req.params.id)
@@ -42,6 +42,7 @@ router.delete('/:id', validateUserId, async (req, res, next) => {
     catch(error){next(error)}
 });
 
+//Get the posts
 router.get('/:id/posts', validateUserId, async (req, res, next) => {
     try{
         const result = await Users.getUserPosts(req.params.id)
@@ -50,18 +51,23 @@ router.get('/:id/posts', validateUserId, async (req, res, next) => {
     catch(error){next(error)}
 });
 
-router.post('/:id/posts',validateUserId,(req, res) => {
-  // RETURN THE NEWLY CREATED USER POST
-  // this needs a middleware to verify user id
-  // and another middleware to check that the request body is valid
+router.post('/:id/posts',validateUserId,validatePost,async(req, res, next) => {
+    try{
+        const result = await Posts.insert({
+            user_id: req.params.id,
+            text: req.text
+        })
+        res.status(201).json(result)
+    }
+    catch(error){next(error)}
 });
 
-router.use((err, req, res, next) => {
+router.use((err, req, res) => {
     res.status(err.status || 500).json({
         customMessage: "something tragic",
         err: err.message
     })
 })
 
-// do not forget to export the router
+
 module.exports = router;
